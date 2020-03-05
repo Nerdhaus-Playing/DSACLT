@@ -10,8 +10,12 @@ namespace DSACLT.Parser
     {
         public Parser()
         {
-
+            maxIdentifierLength = 0;
+            maxUsageLength = 0;
+            maxDescriptionLength = 0;
+            actions = new List<Action>();
         }
+
         public void addCommandAction(Action action)
         {
             foreach (var currAction in actions)
@@ -22,6 +26,9 @@ namespace DSACLT.Parser
                 }
             }
             actions.Add(action);
+            maxIdentifierLength = Math.Max(maxIdentifierLength, action.Identifier.Length);
+            maxDescriptionLength = Math.Max(maxDescriptionLength, action.Description.Length);
+            maxUsageLength = Math.Max(maxUsageLength, action.Usage.Length);
         }
         public override bool HandleCommandWithArgs(string input)
         {
@@ -31,7 +38,7 @@ namespace DSACLT.Parser
             {
                 if (identifier == currAction.Identifier)
                 {
-                    if(input.Length == identifier.Length)
+                    if (input.Length == identifier.Length)
                     {
                         return currAction.HandleCommandWithoutArgs();
                     }
@@ -41,6 +48,16 @@ namespace DSACLT.Parser
                     }
                 }
             }
+            if (input == "help")
+            {
+                foreach (var action in actions)
+                {
+                    WriteTextWithFixedSize(maxIdentifierLength, action.Identifier);
+                    WriteTextWithFixedSize(maxUsageLength, action.Usage);
+                    WriteTextWithFixedSize(maxDescriptionLength, action.Description);
+                }
+                return true;
+            }
             throw new ArgumentException("Unknown Identifier");
         }
 
@@ -49,6 +66,18 @@ namespace DSACLT.Parser
             return true;
         }
 
+        private void WriteTextWithFixedSize(int size, string text)
+        {
+            Console.Write(text);
+            for(int i = text.Length; i< size; i++)
+            {
+                Console.Write(" ");
+            }
+        }
+
         private List<Action> actions;
+        private int maxIdentifierLength;
+        private int maxUsageLength;
+        private int maxDescriptionLength;
     }
 }
